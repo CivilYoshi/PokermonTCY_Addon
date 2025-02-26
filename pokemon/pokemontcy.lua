@@ -791,17 +791,19 @@ local xurkitree = {
     atlas = "Pokedex_SM",
     blueprint_compat = true,
     calculate = function(self, card, context)
-        -- Handle pairs multiplier at end of hand
+        -- Handle pairs multiplier when scoring a hand
         if context.cardarea == G.jokers and context.scoring_hand then
             if context.joker_main then
                 local steel_count = 0
                 local gold_count = 0
                 
-                for _, v in ipairs(G.hand.cards) do
-                    if v.ability.name == 'Steel Card' then
-                        steel_count = steel_count + 1
-                    elseif v.ability.name == 'Gold Card' then
-                        gold_count = gold_count + 1
+                if G.hand and G.hand.cards then
+                    for _, v in ipairs(G.hand.cards) do
+                        if v.ability.name == 'Steel Card' then
+                            steel_count = steel_count + 1
+                        elseif v.ability.name == 'Gold Card' then
+                            gold_count = gold_count + 1
+                        end
                     end
                 end
                 
@@ -816,16 +818,61 @@ local xurkitree = {
             end
         end
         
-        -- Handle individual card effects in hand
-        if context.individual and context.cardarea == G.hand then
-            if context.other_card.ability.name == 'Steel Card' then
-                return {
-                    dollars = card.ability.extra.h_dollars
-                }
-            elseif context.other_card.ability.name == 'Gold Card' then
+        -- Handle Gold Card effects in hand during scoring only
+        if context.individual and context.cardarea == G.hand and not context.end_of_round then
+            if context.other_card.ability.name == 'Gold Card' then
                 return {
                     x_mult = card.ability.extra.h_x_mult,
                 }
+            end
+        end
+        
+        -- Handle Steel Card money at end of round
+        if context.end_of_round and not context.individual and not context.repetition and not context.blueprint then
+            -- Count steel cards in hand
+            local steel_count = 0
+            local steel_cards = {}
+            
+            if G.hand and G.hand.cards then
+                for _, v in ipairs(G.hand.cards) do
+                    if v.ability.name == 'Steel Card' then
+                        steel_count = steel_count + 1
+                        table.insert(steel_cards, v)
+                    end
+                end
+            end
+            
+            -- Award dollars for each steel card with a wave effect
+            if steel_count > 0 then
+                local total_dollars = steel_count * card.ability.extra.h_dollars
+                
+                -- Stagger the effects for each steel card
+                for i, steel_card in ipairs(steel_cards) do
+                    local delay_time = 0.15 * (i - 1)  -- Increase delay for each card
+                    
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'after',
+                        delay = delay_time,
+                        func = function()
+                            card_eval_status_text(steel_card, 'dollars', card.ability.extra.h_dollars, nil, nil, {
+                                instant = true
+                            })
+                            play_sound('coin1', 0.9 + 0.1 * math.random(), 0.7)
+                            steel_card:juice_up(0.5, 0.5)
+                            return true
+                        end
+                    }))
+                end
+                
+                -- Add the total money after all cards have been processed
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.15 * steel_count + 0.1,
+                    func = function()
+                        ease_poke_dollars(card, "xurkitree", total_dollars, true)
+                        return true
+                    end
+                }))
             end
         end
     end
