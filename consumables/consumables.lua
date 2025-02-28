@@ -111,39 +111,38 @@ local loveball = {
           end
         end
         
-        if not poke_name then goto continue end
-        
-        -- Find which family this Pokémon belongs to
-        local family_id = nil
-        for fam_id, family_group in ipairs(family) do
-          for _, pokemon in ipairs(family_group) do
-            local name = (type(pokemon) == "table" and pokemon.name) or pokemon
-            if name == poke_name then
-              family_id = fam_id
+        -- Only process if we have a valid Pokemon name
+        if poke_name then
+          -- Find which family this Pokémon belongs to
+          local family_id = nil
+          for fam_id, family_group in ipairs(family) do
+            for _, pokemon in ipairs(family_group) do
+              local name = (type(pokemon) == "table" and pokemon.name) or pokemon
+              if name == poke_name then
+                family_id = fam_id
+                break
+              end
+            end
+            if family_id then break end
+          end
+          
+          -- Check if it's a valid Pokemon and from a new family
+          if center and center.stage and 
+             center.stage ~= "Legendary" and 
+             center.stage ~= "Ultra Beast" and
+             center.set == "Joker" and
+             center.stage ~= "Other" and
+             family_id and not used_families[family_id] then
+             
+            table.insert(top_jokers, joker_key)
+            used_families[family_id] = true
+            
+            -- Break once we have 8
+            if #top_jokers >= 8 then
               break
             end
           end
-          if family_id then break end
         end
-        
-        -- Check if it's a valid Pokemon and from a new family
-        if center and center.stage and 
-           center.stage ~= "Legendary" and 
-           center.stage ~= "Ultra Beast" and
-           center.set == "Joker" and
-           center.stage ~= "Other" and
-           family_id and not used_families[family_id] then
-           
-          table.insert(top_jokers, joker_key)
-          used_families[family_id] = true
-          
-          -- Break once we have 8
-          if #top_jokers >= 8 then
-            break
-          end
-        end
-        
-        ::continue::
       end
       
       -- If we don't have any top jokers, create a random basic Pokémon
@@ -185,13 +184,11 @@ local loveball = {
           end
         end
         
-
         if final_key ~= chosen_key then
           break
         end
       end
       
-
       local _card = SMODS.create_card({set = "Joker", area = G.jokers, key = final_key})
       
       local edition_type = pseudorandom_element({"holo", "foil"}, pseudoseed("loveball_edition" .. os.time()))
