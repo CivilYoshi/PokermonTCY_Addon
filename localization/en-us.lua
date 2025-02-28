@@ -174,6 +174,17 @@ return {
 				}
 			}
         },
+        Item = {
+            c_tcy_loveball = {
+                name = "Loveball",
+                text = {
+                    "Create a basic{C:attention} Joker{}",
+                    "that you {C:fairy}Love!{}",
+                    "{C:inactive}(Must have room)"
+                }
+            }
+        
+        },
         Spectral = {
 			c_tcy_beastball = {
                 name = "Beastball",
