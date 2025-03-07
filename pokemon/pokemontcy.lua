@@ -869,7 +869,7 @@ local xurkitree = {
                     trigger = 'after',
                     delay = 0.15 * steel_count + 0.1,
                     func = function()
-                        ease_poke_dollars(card, "xurkitree", total_dollars, true)
+                        ease_dollars(total_dollars)
                         return true
                     end
                 }))
