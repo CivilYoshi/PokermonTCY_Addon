@@ -220,10 +220,21 @@ local trapinch={
     if context.hand_drawn and not context.blueprint then
       G.E_MANAGER:add_event(Event({
         func = function()
+          -- Initialize a list of cards forced by Trapinch if needed
+          G.GAME.current_round.trapinch_cards = G.GAME.current_round.trapinch_cards or {}
+          
           for i = 1, #G.hand.cards do
             if G.hand.cards[i]:is_suit("Diamonds") then
-              G.hand.cards[i].ability.forced_selection = true
-              G.hand:add_to_highlighted(G.hand.cards[i])
+              -- Check if this card has already been handled by any Trapinch
+              local card_id = G.hand.cards[i].playing_card or i
+              if not G.GAME.current_round.trapinch_cards[card_id] then
+                -- Mark that this card was handled by Trapinch
+                G.GAME.current_round.trapinch_cards[card_id] = true
+                
+                -- Apply forced selection and add to highlighted
+                G.hand.cards[i].ability.forced_selection = true
+                G.hand:add_to_highlighted(G.hand.cards[i])
+              end
             end
           end
           return true
@@ -231,14 +242,12 @@ local trapinch={
       }))
     end
     
-	-- Apply XMult when scoring
     if context.cardarea == G.jokers and context.scoring_hand then
       if context.joker_main then
         return {
           message = localize{type = 'variable', key = 'a_xmult', vars = {card.ability.extra.Xmult}},
           colour = G.C.XMULT,
           Xmult_mod = card.ability.extra.Xmult
-		  
         }
       end
     end
@@ -246,8 +255,19 @@ local trapinch={
     -- Handle card drawing mid-round (like from Tarot cards)
     if context.drawing_card and not context.blueprint then
       if context.other_card and context.other_card:is_suit("Diamonds") then
-        context.other_card.ability.forced_selection = true
-        G.hand:add_to_highlighted(context.other_card)
+        -- Initialize a list of cards forced by Trapinch if needed
+        G.GAME.current_round.trapinch_cards = G.GAME.current_round.trapinch_cards or {}
+        
+        -- Check if this card has already been handled by any Trapinch
+        local card_id = context.other_card.playing_card or 0
+        if not G.GAME.current_round.trapinch_cards[card_id] then
+          -- Mark that this card was handled by Trapinch
+          G.GAME.current_round.trapinch_cards[card_id] = true
+          
+          -- Apply forced selection and add to highlighted
+          context.other_card.ability.forced_selection = true
+          G.hand:add_to_highlighted(context.other_card)
+        end
       end
     end
     
@@ -256,26 +276,56 @@ local trapinch={
   end,
   
   load = function(self, card, card_table, other_card)
-        G.E_MANAGER:add_event(Event({
-        func = function()
-          for i = 1, #G.hand.cards do
-            if G.hand.cards[i]:is_suit("Diamonds") then
+    G.E_MANAGER:add_event(Event({
+      func = function()
+        -- Initialize a list of cards forced by Trapinch if needed
+        G.GAME.current_round.trapinch_cards = G.GAME.current_round.trapinch_cards or {}
+        
+        for i = 1, #G.hand.cards do
+          if G.hand.cards[i]:is_suit("Diamonds") then
+            -- Check if this card has already been handled by any Trapinch
+            local card_id = G.hand.cards[i].playing_card or i
+            if not G.GAME.current_round.trapinch_cards[card_id] then
+              -- Mark that this card was handled by Trapinch
+              G.GAME.current_round.trapinch_cards[card_id] = true
+              
+              -- Apply forced selection and add to highlighted
               G.hand.cards[i].ability.forced_selection = true
               G.hand:add_to_highlighted(G.hand.cards[i])
             end
           end
-          return true
         end
-      }))
-	  end,
+        return true
+      end
+    }))
+  end,
   
-  -- Clean up forced selections when removed
+  -- Clean up when removed
   remove_from_deck = function(self, card, from_debuff)
-    for k, v in ipairs(G.playing_cards) do
-      v.ability.forced_selection = nil
+    -- Count remaining Trapinch cards
+    local trapinch_count = 0
+    for i = 1, #G.jokers.cards do
+      if G.jokers.cards[i].ability.name == "trapinch" and G.jokers.cards[i] ~= card then
+        trapinch_count = trapinch_count + 1
+      end
+    end
+    
+    -- Only clear if this was the last Trapinch
+    if trapinch_count == 0 then
+      if G.GAME.current_round.trapinch_cards then
+        -- Remove forced selection from all cards in hand
+        for i = 1, #G.hand.cards do
+          local card_id = G.hand.cards[i].playing_card or i
+          if G.GAME.current_round.trapinch_cards[card_id] then
+            G.hand.cards[i].ability.forced_selection = nil
+          end
+        end
+        G.GAME.current_round.trapinch_cards = nil
+      end
     end
   end
 }
+
 
 local vibrava={
   name = "vibrava",
