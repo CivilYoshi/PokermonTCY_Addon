@@ -130,6 +130,27 @@ return {
 				"Trigger the {C:dark_edition}edition{} of {C:attention}Steel Cards{} scored from hand",
 				}
 			},
+			j_tcy_larvesta = {
+					name = 'Larvesta',
+					text = {
+						"{C:chips}+#1#{} Chips and {C:mult}+#2#{} Mult",
+						"{br:3}text needs to be here to work",
+						"{C:inactive}(Evolves when {C:attention}Sun{}{C:inactive} card is used)"
+					}
+				},
+				j_tcy_volcarona = {
+					name = 'Volcarona',
+					text = {
+						"Gain {X:mult,C:white}X#1#{} Mult for each",
+						"{C:attention}Sun{} card owned at end of round",
+						"{br:3}text needs to be here to work",
+						"When {C:attention}Sun{} card used, double {X:mult,C:white}X{} Mult",
+						"for current blind",
+						"{br:3}text needs to be here to work",
+						"Lose {X:mult,C:white}X#1#{} Mult per round without {C:attention}Sun{} cards",
+						"{C:inactive}(Currently: {X:mult,C:white}X#2#{}{C:inactive} Mult)"
+					}
+				},
 			j_tcy_xurkitree = {
 				name = "Xurkitree",
 				text = {
@@ -229,6 +250,10 @@ return {
 			tcy_miss_ex = "Miss...",
 			-- Heatran
 			tcy_magma_storm_ex = "Magma Storm!",
+			--- Volcarona
+			tcy_sunny_day_ex = "Sunny Day!",
+			tcy_mult_gain_ex = "Quiver Dance!",
+			tcy_mult_loss_ex = "-0.2XMult",
 			-- UB's
 			tcy_boost_ex = "Beast Boost!",
 			tcy_consume_ex = "Consume..."

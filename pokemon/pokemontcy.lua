@@ -808,6 +808,169 @@ calculate = function(self, card, context)
 end
 }
 
+local larvesta = {
+  name = "larvesta",
+  pos = {x = 2, y = 10},
+  poke_custom_prefix = "tcy",
+  config = {extra = {
+    chips = 10,    -- Base chip value
+    mult = 3       -- Base mult value
+  }},
+  loc_vars = function(self, info_queue, center)
+    type_tooltip(self, info_queue, center)
+    info_queue[#info_queue+1] = G.P_CENTERS.c_sun
+    return {vars = {center.ability.extra.chips, center.ability.extra.mult}}
+  end,
+  rarity = 3,
+  cost = 4,
+  stage = "Basic",
+  ptype = "Fire",
+  atlas = "Pokedex_BW",
+  blueprint_compat = true,
+  calculate = function(self, card, context)
+    -- Basic scoring effect - add chips and mult
+    if context.cardarea == G.jokers and context.scoring_hand then
+      if context.joker_main then
+        return {
+          message = localize{type = 'variable', key = 'a_chips', vars = {card.ability.extra.chips}}, 
+          colour = G.C.CHIPS,
+          chip_mod = card.ability.extra.chips,
+          mult_mod = card.ability.extra.mult
+        }
+      end
+    end
+    
+    -- Check for Sun card being used
+    if context.using_consumeable and context.consumeable and 
+       context.consumeable.ability.name == "The Sun" and not context.blueprint then
+      -- Evolve when Sun card is used
+      return {
+        message = evolve(self, card, context, "j_tcy_volcarona")
+      }
+    end
+  end
+}
+
+local volcarona = {
+  name = "volcarona",
+  pos = {x = 3, y = 10},
+  poke_custom_prefix = "tcy",
+  config = {extra = {
+    base_xmult = 1.0,      -- Base X multiplier (minimum)
+    bonus_xmult = 0.0,     -- Accumulated bonus X multiplier
+    xmult_increment = 0.2, -- X multiplier gain/loss per Sun card
+    xmult_doubled = false, -- Flag for doubling effect from using Sun
+    had_sun_this_round = false -- Flag to track if player had Sun during round
+  }},
+  loc_vars = function(self, info_queue, center)
+    type_tooltip(self, info_queue, center)
+    info_queue[#info_queue+1] = G.P_CENTERS.c_sun
+    
+    -- Count current Sun cards
+    local sun_count = 0
+    if G.consumeables and G.consumeables.cards then
+      for _, card in ipairs(G.consumeables.cards) do
+        if card.config.center.key == "c_sun" then
+          sun_count = sun_count + 1
+        end
+      end
+    end
+    
+    -- Calculate total Xmult
+    local total_xmult = center.ability.extra.base_xmult + center.ability.extra.bonus_xmult
+    if center.ability.extra.xmult_doubled then
+      total_xmult = total_xmult * 2
+    end
+    
+    return {vars = {
+      center.ability.extra.xmult_increment,
+      total_xmult,
+      sun_count
+    }}
+  end,
+  rarity = "poke_safari",
+  cost = 7,
+  stage = "Two",
+  ptype = "Fire",
+  atlas = "Pokedex_BW",
+  blueprint_compat = true,
+  calculate = function(self, card, context)
+    -- Apply X multiplier when scoring
+    if context.cardarea == G.jokers and context.scoring_hand then
+      if context.joker_main then
+        local total_xmult = card.ability.extra.base_xmult + card.ability.extra.bonus_xmult
+        
+        -- Apply doubling if active
+        if card.ability.extra.xmult_doubled then
+          total_xmult = total_xmult * 2
+        end
+        
+        return {
+          message = localize{type = 'variable', key = 'a_xmult', vars = {total_xmult}},
+          colour = G.C.XMULT,
+          Xmult_mod = total_xmult
+        }
+      end
+    end
+    
+    -- Check for Sun card usage - temporarily double Xmult for this blind
+    if context.using_consumeable and context.consumeable and 
+       context.consumeable.ability.name == "The Sun" and not context.blueprint then
+      card.ability.extra.xmult_doubled = true
+      card_eval_status_text(card, 'extra', nil, nil, nil, {
+        message = localize('tcy_sunny_day_ex'), 
+        colour = G.C.YELLOW
+      })
+      card:juice_up()
+    end
+    
+    -- Check for Sun card ownership during round
+    if context.cardarea == G.consumeables and not context.blueprint then
+      if context.other_card and context.other_card.ability.name == "The Sun" then
+        card.ability.extra.had_sun_this_round = true
+      end
+    end
+    
+    -- End of round processing - adjust Xmult based on Sun ownership
+    if context.end_of_round and not context.individual and not context.repetition and not context.blueprint then
+      -- First, check if we have Sun cards
+      local sun_count = 0
+      if G.consumeables and G.consumeables.cards then
+        for _, consumable in ipairs(G.consumeables.cards) do
+          if consumable.ability.name == "The Sun" then
+            sun_count = sun_count + 1
+          end
+        end
+      end
+      
+      if sun_count > 0 or card.ability.extra.had_sun_this_round then
+        -- Add Xmult for each Sun card owned
+        local xmult_gain = sun_count * card.ability.extra.xmult_increment
+        card.ability.extra.bonus_xmult = card.ability.extra.bonus_xmult + xmult_gain
+        
+        if xmult_gain > 0 then
+          card_eval_status_text(card, 'extra', nil, nil, nil, {
+            message = localize('tcy_mult_gain_ex'), 
+            colour = G.C.YELLOW
+          })
+        end
+      else
+        -- Lose Xmult if no Sun cards were owned during round
+        card.ability.extra.bonus_xmult = math.max(0, card.ability.extra.bonus_xmult - card.ability.extra.xmult_increment)
+        
+        card_eval_status_text(card, 'extra', nil, nil, nil, {
+          message = localize('tcy_mult_loss_ex'), 
+          colour = G.C.RED
+        })
+      end
+      
+      -- Reset flags for next round
+      card.ability.extra.had_sun_this_round = false
+      card.ability.extra.xmult_doubled = false
+    end
+  end
+}
+
 local xurkitree = {
     name = "xurkitree",
     pos = {x = 4, y = 7},
@@ -1246,5 +1409,5 @@ local blacephalon = {
 }
 
 return {name = "PokermonTCY1", 
-list = {lugia, hooh, trapinch, vibrava, flygon, spheal, sealeo, walrein, heatran, xurkitree, guzzlord, stakataka, blacephalon},
+list = {lugia, hooh, trapinch, vibrava, flygon, spheal, sealeo, walrein, heatran, larvesta, volcarona, xurkitree, guzzlord, stakataka, blacephalon},
 }
