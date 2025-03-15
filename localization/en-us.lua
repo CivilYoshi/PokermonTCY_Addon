@@ -130,7 +130,7 @@ return {
 				"Trigger the {C:dark_edition}edition{} of {C:attention}Steel Cards{} scored from hand",
 				}
 			},
-			j_tcy_larvesta = {
+				j_tcy_larvesta = {
 					name = 'Larvesta',
 					text = {
 						"{C:chips}+#1#{} Chips and {C:mult}+#2#{} Mult",

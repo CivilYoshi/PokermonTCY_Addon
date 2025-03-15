@@ -55,6 +55,20 @@ SMODS.Atlas({
 }):register()
 
 SMODS.Atlas({
+  key = "Pokedex_BW",
+  path = "Pokedex_BW.png",
+  px = 71,
+  py = 95
+}):register()
+
+SMODS.Atlas({
+  key = "Shinydex_BW",
+  path = "Shinydex_BW.png",
+  px = 71,
+  py = 95
+}):register()
+
+SMODS.Atlas({
   key = "Pokedex_SM",
   path = "Pokedex_SM.png",
   px = 71,
@@ -81,6 +95,7 @@ SMODS.Rarity{
 
 table.insert(family, {"trapinch", "vibrava", "flygon"})
 table.insert(family, {"spheal", "sealeo", "walrein"})
+table.insert(family, {"larvesta", "volcarona"})
 
 
 mod_dir = ''..SMODS.current_mod.path
