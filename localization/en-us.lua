@@ -130,7 +130,6 @@ return {
 				"Trigger the {C:dark_edition}edition{} of {C:attention}Steel Cards{} scored from hand",
 				}
 			},
-<<<<<<< HEAD
 				j_tcy_larvesta = {
 					name = 'Larvesta',
 					text = {
@@ -152,8 +151,6 @@ return {
 						"{C:inactive}(Currently: {X:mult,C:white}X#2#{}{C:inactive} Mult)"
 					}
 				},
-=======
->>>>>>> parent of 47aa7c8 (Volcarona Added)
 			j_tcy_xurkitree = {
 				name = "Xurkitree",
 				text = {
@@ -253,6 +250,10 @@ return {
 			tcy_miss_ex = "Miss...",
 			-- Heatran
 			tcy_magma_storm_ex = "Magma Storm!",
+			--- Volcarona
+			tcy_sunny_day_ex = "Sunny Day!",
+			tcy_mult_gain_ex = "Quiver Dance!",
+			tcy_mult_loss_ex = "-0.2XMult",
 			-- UB's
 			tcy_boost_ex = "Beast Boost!",
 			tcy_consume_ex = "Consume..."
