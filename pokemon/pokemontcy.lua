@@ -856,9 +856,9 @@ local volcarona = {
   pos = {x = 3, y = 10},
   poke_custom_prefix = "tcy",
   config = {extra = {
-    base_xmult = 1.0,      -- Base X multiplier (minimum)
-    bonus_xmult = 0.0,     -- Accumulated bonus X multiplier
-    xmult_increment = 0.2, -- X multiplier gain/loss per Sun card
+    Xmult = 1.0,           
+    Xmult_mod = 0.2,       
+    bonus_storage = 0.0,   
     xmult_doubled = false, -- Flag for doubling effect from using Sun
     had_sun_this_round = false -- Flag to track if player had Sun during round
   }},
@@ -877,13 +877,13 @@ local volcarona = {
     end
     
     -- Calculate total Xmult
-    local total_xmult = center.ability.extra.base_xmult + center.ability.extra.bonus_xmult
+    local total_xmult = center.ability.extra.Xmult + center.ability.extra.bonus_storage
     if center.ability.extra.xmult_doubled then
       total_xmult = total_xmult * 2
     end
     
     return {vars = {
-      center.ability.extra.xmult_increment,
+      center.ability.extra.Xmult_mod,
       total_xmult,
       sun_count
     }}
@@ -898,7 +898,7 @@ local volcarona = {
     -- Apply X multiplier when scoring
     if context.cardarea == G.jokers and context.scoring_hand then
       if context.joker_main then
-        local total_xmult = card.ability.extra.base_xmult + card.ability.extra.bonus_xmult
+        local total_xmult = card.ability.extra.Xmult + card.ability.extra.bonus_storage
         
         -- Apply doubling if active
         if card.ability.extra.xmult_doubled then
@@ -945,8 +945,8 @@ local volcarona = {
       
       if sun_count > 0 or card.ability.extra.had_sun_this_round then
         -- Add Xmult for each Sun card owned
-        local xmult_gain = sun_count * card.ability.extra.xmult_increment
-        card.ability.extra.bonus_xmult = card.ability.extra.bonus_xmult + xmult_gain
+        local xmult_gain = sun_count * card.ability.extra.Xmult_mod
+        card.ability.extra.bonus_storage = card.ability.extra.bonus_storage + xmult_gain
         
         if xmult_gain > 0 then
           card_eval_status_text(card, 'extra', nil, nil, nil, {
@@ -956,7 +956,7 @@ local volcarona = {
         end
       else
         -- Lose Xmult if no Sun cards were owned during round
-        card.ability.extra.bonus_xmult = math.max(0, card.ability.extra.bonus_xmult - card.ability.extra.xmult_increment)
+        card.ability.extra.bonus_storage = math.max(0, card.ability.extra.bonus_storage - card.ability.extra.Xmult_mod)
         
         card_eval_status_text(card, 'extra', nil, nil, nil, {
           message = localize('tcy_mult_loss_ex'), 
