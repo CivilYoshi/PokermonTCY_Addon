@@ -1246,5 +1246,5 @@ local blacephalon = {
 }
 
 return {name = "PokermonTCY1", 
-list = {lugia, hooh, trapinch, vibrava, flygon, spheal, sealeo, walrein, heatran, xurkitree, guzzlord, stakataka, blacephalon},
+list = {lugia, hooh, trapinch, vibrava, flygon, spheal, sealeo, walrein, heatran, larvesta, volcarona, xurkitree, guzzlord, stakataka, blacephalon},
 }
